@@ -8,10 +8,6 @@ import theano
 import theano.tensor as T
 
 
-
-
-
-
 # Backtracking-Armijo line search
 def backtracking_armijo(x0, p, func, grad_func, *dataset, **kwargs):
     alpha = 1
@@ -20,44 +16,6 @@ def backtracking_armijo(x0, p, func, grad_func, *dataset, **kwargs):
     while not (func(x0 + alpha * p, *dataset)) <= func(x0, *dataset) + rho * np.dot(grad_func(x0, *dataset), p) * alpha:
         alpha *= gamma
     return alpha
-
-
-def auto4check(dataset, x, tol=1e-9, maxiter=1000):
-
-    t0 = theano.shared(value=dataset[0], name="t0")
-    a0 = theano.shared(value=dataset[1], name="a0")
-    b0 = theano.shared(value=dataset[2], name="b0")
-    c0 = theano.shared(value=dataset[3], name="c0")
-    k = T.vector('k')
-    a_t = np.e ** (-(k[0] + k[1]) * t0)
-    b_t = k[0] / (k[0] + k[1]) * (1 - a_t)
-    c_t = k[1] / (k[0] + k[1]) * (1 - a_t)
-    f = T.sum((a0 - a_t) ** 2 + (b0 - b_t) ** 2 + (c0 - c_t) ** 2)
-    F = theano.function([k], f)
-    g_f_k = T.jacobian(f, k)
-    j_f_k = theano.function([k], g_f_k)
-    H_f_k = T.hessian(f, k)
-    Hessian = theano.function([k], H_f_k)
-
-
-    track, f_val = [], []
-    track.append(array(x))
-    f_val.append(F(x))
-    g = j_f_k(x)
-    i = 0
-    print "Step =", i, "g=", g, "x=", x, "loss=", F(x)
-    while norm(g) > tol:
-        i += 1
-        if i > maxiter:
-            break
-        G = Hessian(x)
-        s = -np.linalg.solve(G, g)
-        x += s
-        track.append(array(x))
-        f_val.append(F(x))
-        g = j_f_k(x)
-        print "step =", i, "g=", g, "x=", x, "loss=", F(x), "G=", G
-    return x, F(x), track, f_val
 
 
 def bfgs(func, grad_func, x0, dataset, tol=1e-9, maxiter=1000):
@@ -163,7 +121,6 @@ class TrustRegion():
             if i > self.maxiter:
                 break
         return x, self.func(x, *self.args), track, f_val
-
 
 
 def newton(func, grad_func, hessian_func, x0, dataset, tol=1e-9, linear=False, maxiter=1000):

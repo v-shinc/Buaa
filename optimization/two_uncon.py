@@ -11,6 +11,7 @@ import theano.tensor as T
 from scipy.optimize import fmin_bfgs, fmin_l_bfgs_b
 from optimize import TrustRegion, newton, bfgs
 
+
 def loadData(file):
     dataset = []
     with open(file) as fin:
@@ -23,8 +24,6 @@ def loadData(file):
     b = dataset[:, 2]
     c = dataset[:, 3]
     return t, a, b, c
-
-
 
 
 def auto4check(dataset, x, tol=1e-9, maxiter=1000):
@@ -207,7 +206,7 @@ def problem1():
     print fmin_l_bfgs_b(loss, [2, 2], fprime=gradient, args=dataset, approx_grad=False, bounds=None, epsilon=1e-16, iprint=0, disp=1)
 
 
-def auto4check2(input,dataset):
+def auto4check2(input, dataset):
     a = theano.shared(value=dataset[0], name="a")
     b = theano.shared(value=dataset[1], name="b")
     c = theano.shared(value=dataset[2], name="c")
@@ -245,7 +244,6 @@ def auto4check2(input,dataset):
 
 def problem2():
 
-
     def component(x, *dataset):
         a, b, c = dataset
         u = x[0] - 0.8
@@ -253,14 +251,11 @@ def problem2():
         alpha = -b[0] + b[1] * u ** 2 * (1 + u) ** 0.5 + b[2] * u
         beta = c[0] * (v ** 2) * (1 - c[1] * v) / (1 + c[2] * (u ** 2))
         return u, v, alpha, beta
+
     def loss(x, *dataset):
         u, v, alpha, beta = component(x, *dataset)
-        # a, b, c = dataset
-        # u = x[0] - 0.8
-        # v = x[1] - (a[0] + a[1] * u ** 2 * (1 - u) ** 0.5 - a[2] * u)
-        # alpha = -b[0] + b[1] * u ** 2 * (1 + u) ** 0.5 + b[2] * u
-        # beta = c[0] * (v ** 2) * (1 - c[1] * v) / (1 + c[2] * (u ** 2))
         return alpha * np.e ** (-beta)
+    
     def gradient(x, *dataset):
         if x.dtype != np.float64:
             x = array(x, dtype=np.float64)
@@ -284,11 +279,13 @@ def problem2():
         g_f_beta = -alpha * np.e ** -beta
         g_f_x = dot([g_f_alpha, g_f_beta], [g_alpha_x, g_beta_x])
 
-        return g_f_x
+        return g_f
+
     def min_eig(x, *dataset):
         H = hessian(x, *dataset)
         w, _ = np.linalg.eig(H)
         return min(w)
+
     def hessian(x, *dataset):
         # substitute x1 into u
         # y = [alpha, beta]
@@ -346,7 +343,6 @@ def problem2():
         # print J_y_x
         H_f_x = dot(dot(J_y_x.T, H_f_y), J_y_x) + dot(H_y_x, J_f_y)
         return H_f_x
-
 
     a = array([0.3, 0.6, 0.2], dtype=np.float64)
     b = array([5., 26., 3.], dtype=np.float64)
